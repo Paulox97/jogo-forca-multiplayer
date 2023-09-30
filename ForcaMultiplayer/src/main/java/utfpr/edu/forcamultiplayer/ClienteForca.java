@@ -45,6 +45,42 @@ public class ClienteForca {
             e.printStackTrace();
         }//fim trycatch
     }
+    
+    public void enviarLetra(){
+        try{
+            //quando o enviar mensagem for executado pela primeira vez
+            enviar.write(username);
+            enviar.newLine();
+            enviar.flush();
+            Scanner scan = new Scanner(System.in);
+            while(socket.isConnected()){
+                String msg = scan.nextLine();
+                enviar.write(username+": "+msg);
+                enviar.newLine();
+                enviar.flush();
+            }
+        }catch(IOException e){
+            fechaTudo(socket, receber, enviar);
+        }
+    }//fim enviar mensagem
+    
+    public void receberLetra(){
+        new Thread(new Runnable(){
+            @Override
+                public void run(){
+                    String msgDoChat;
+                    while(socket.isConnected()){
+                        try{
+                            msgDoChat = receber.readLine();
+                            System.out.println(msgDoChat);
+                        }catch(IOException e){
+                            fechaTudo(socket, receber, enviar);
+                        }//fim trycatch
+                    }//fim while
+                }//run
+            }//runnable
+        ).start();//Thread
+    }//fim receber msg
 
     public static void main(String[] args) throws IOException {
         
@@ -55,6 +91,8 @@ public class ClienteForca {
         String username = scan.nextLine();
         Socket socket = new Socket("localhost",8080);
         ClienteForca clienteForca = new ClienteForca(username, socket);
+        clienteForca.receberLetra();
+        
         
         //Instancias e variaveis necessárias para o jogo
         
@@ -101,8 +139,11 @@ public class ClienteForca {
             }
             //adiciona a letra digitada ao histórico de letras
             letrasDigitadas.add(letra); 
+            clienteForca.enviarLetra();
             //verifica se a palavra contém a letra digitada
             palavraEscolhida = caracteres.acertoDeCaracteres(aux, palavraEscolhida, letra);
+            
+            
             
             qtdVidas = vidaJogador.vidasDoJogador(aux, letra, qtdVidas);
             //Se acabar as vidas, o jogo termina
