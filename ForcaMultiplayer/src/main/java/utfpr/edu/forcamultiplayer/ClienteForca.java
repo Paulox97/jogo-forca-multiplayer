@@ -1,14 +1,63 @@
 package utfpr.edu.forcamultiplayer;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOError;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.Set;
 
 
-public class JogoForca {
-  
+public class ClienteForca {
+    private BufferedReader receber;
+    private BufferedWriter enviar;
+    
+    private String username;
+    private Socket socket;
+    
+    public ClienteForca(String username, Socket socket) {
+        try{
+            this.username = username;
+            this.socket = socket;
+            this.receber = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.enviar = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        }catch(IOException e){
+            fechaTudo(socket, receber, enviar);
+        }        
+    }
+    
+    public void fechaTudo(Socket socket, BufferedReader receber, BufferedWriter enviar){
+        try{
+            if(socket != null){
+                socket.close();
+            }
+            if(enviar != null){
+                enviar.close();
+            }
+            if(receber != null){
+                receber.close();
+            }
+        }catch(IOException e){
+            e.printStackTrace();
+        }//fim trycatch
+    }
 
-    public static void main(String[] args) {
-        //Instancias
+    public static void main(String[] args) throws IOException {
+        
+        //Pegando o nome do usuário que irá participar do jogo
+        
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Digite seu nome de usuário: ");
+        String username = scan.nextLine();
+        Socket socket = new Socket("localhost",8080);
+        ClienteForca clienteForca = new ClienteForca(username, socket);
+        
+        //Instancias e variaveis necessárias para o jogo
+        
         Palavras palavra = new Palavras();
         Dificuldade dificuldade = new Dificuldade();
         LetrasJogador letraEscolhida = new LetrasJogador();
@@ -21,6 +70,8 @@ public class JogoForca {
         int qtdVidas = 6;
         String aux;
         char letra;
+        
+        //***********Inicio do jogo**************
         
         //Seleção de dificuldade do jogo
         escolhaJogador = dificuldade.escolhaDificuldade();
@@ -75,5 +126,7 @@ public class JogoForca {
                 break;
             }
         }
+        
     }
+    
 }
