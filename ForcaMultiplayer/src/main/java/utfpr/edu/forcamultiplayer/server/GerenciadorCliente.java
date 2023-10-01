@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import utfpr.edu.forcamultiplayer.common.Decoder;
 
 
 class GerenciadorCliente implements Runnable{
@@ -42,12 +43,12 @@ class GerenciadorCliente implements Runnable{
         bloqueia o restante do código, porém precisamos ser capaz de continuar a enviar mensagens 
         e ainda assim ficar ouvindo, para isso precisamos trabalhar com Threads, 
         do qual são capazes de executar o nosso código em blocos*/
-        String msg;
         while(socket.isConnected()){
             try{
-                msg = receber.readLine();
-                transmitir(msg);
-                System.out.println("TESTANDO O run");
+                var data = Decoder.decoder(receber.readLine());
+                System.out.println(data);
+                
+                //transmitir(msg);
             }catch(IOException e){
                 fechaTudo(socket, receber, enviar);
             }
@@ -64,7 +65,6 @@ class GerenciadorCliente implements Runnable{
                     //a msg foi finalizada, dessa forma o buffer se adapta ao tamanho da mensagem
                     //e não fica sobrecarregado, e depois de enviado se esvazia automaticamente
                     cliente.enviar.flush();
-                    System.out.println("TESTANDO O TRANSMITIR");
                 }//fim IF
             }catch(IOException e){
                 fechaTudo(socket, receber, enviar);

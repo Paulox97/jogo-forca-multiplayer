@@ -10,11 +10,13 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
+import utfpr.edu.forcamultiplayer.common.InputData;
+import utfpr.edu.forcamultiplayer.common.SendData;
 
 
 public class ClienteForca {
-    private BufferedReader receber;
-    private BufferedWriter enviar;
+    private static BufferedReader receber;
+    private static BufferedWriter enviar;
     
     private String username;
     private Socket socket;
@@ -95,9 +97,22 @@ public class ClienteForca {
         Scanner scan = new Scanner(System.in);
         System.out.println("Digite seu nome de usuário: ");
         String username = scan.nextLine();
+        
+        System.out.println("Você deseja criar uma sala ou conectar a uma sala?\n"
+                + "1 - Criar sala\n"
+                + "2 - Conectar a uma sala");
+        var opcao = scan.nextInt();
+        
+        var inputData = new InputData();
+        
+        inputData.setUsername(username);
+        inputData.setOperacao(opcao);
+        
         Socket socket = new Socket("localhost",8080);
         ClienteForca clienteForca = new ClienteForca(username, socket);
-        clienteForca.receberLetra();
+        
+        SendData.enviarLetra(inputData, enviar, socket);
+        
         
         
         //Instancias e variaveis necessárias para o jogo
