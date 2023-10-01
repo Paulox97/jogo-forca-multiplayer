@@ -47,6 +47,7 @@ class GerenciadorCliente implements Runnable{
             try{
                 msg = receber.readLine();
                 transmitir(msg);
+                System.out.println("TESTANDO O run");
             }catch(IOException e){
                 fechaTudo(socket, receber, enviar);
             }
@@ -63,6 +64,7 @@ class GerenciadorCliente implements Runnable{
                     //a msg foi finalizada, dessa forma o buffer se adapta ao tamanho da mensagem
                     //e não fica sobrecarregado, e depois de enviado se esvazia automaticamente
                     cliente.enviar.flush();
+                    System.out.println("TESTANDO O TRANSMITIR");
                 }//fim IF
             }catch(IOException e){
                 fechaTudo(socket, receber, enviar);

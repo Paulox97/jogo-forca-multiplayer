@@ -7,6 +7,8 @@ import java.net.Socket;
 
 public class Servidor {
     private ServerSocket socket;
+    private int numClientes = 0;
+    private static final int MAX_CLIENTES = 4; //Definindo a quantidade máximo de clientes
     
     public Servidor (ServerSocket socket){
         this.socket = socket;
@@ -20,15 +22,25 @@ public class Servidor {
             Socket conecao = socket.accept();
             System.out.println("Um cliente se conectou!");
             
-            GerenciadorCliente gc = new GerenciadorCliente(conecao);
+            if (numClientes < MAX_CLIENTES){
+                numClientes++;
+                GerenciadorCliente gc = new GerenciadorCliente(conecao);
             /*Uma thread pode receber um objeto que contenha a interface RUNNABLE
             a thread ficará responsavel por rodar essa instância de forma separada
             e independente do resto do código*/
             Thread t = new Thread(gc);
             t.start();
-            
+            } else {
+                System.out.println("Número máximo de clientes atingido. Conexão recusada");
+                conecao.close();
+            }  
         }//fim while
     }//fim iniciar sessão
+    
+    //Podemos chamar esse método sempre que um cliente for desconectado
+    public void clienteDesconectado(){
+        numClientes--;
+    }
     
     public void fecharSessao() throws IOException{
         if(socket != null){
@@ -42,6 +54,4 @@ public class Servidor {
         System.out.println("Servidor subiu!");
         servidor.iniciarSessao();//chama o metodo iniciar sessao
     }
-    
-    
 }

@@ -53,9 +53,15 @@ public class ClienteForca {
             enviar.newLine();
             enviar.flush();
             Scanner scan = new Scanner(System.in);
-            while(socket.isConnected()){
-                String msg = scan.nextLine();
-                enviar.write(username+": "+msg);
+            if(socket.isConnected()){
+                String letraUsuario = scan.next();
+                scan.nextLine();
+                while (letraUsuario.length() > 1){
+                    System.out.println("VOCÊ DIGITOU MAIS DE UMA LETRA, POR GENTILEZA DIGITE SOMENTE UMA: ");
+                    letraUsuario = scan.next();
+                    scan.nextLine();
+                }
+                enviar.write(username+": "+ letraUsuario);
                 enviar.newLine();
                 enviar.flush();
             }
@@ -154,6 +160,7 @@ public class ClienteForca {
                 
                 break;
             }
+            
             //Mostra a situação da respota e as letras digitadas
             System.out.println("-------------------------------------------------");
             System.out.println(palavraEscolhida);
@@ -167,7 +174,5 @@ public class ClienteForca {
                 break;
             }
         }
-        
     }
-    
 }
