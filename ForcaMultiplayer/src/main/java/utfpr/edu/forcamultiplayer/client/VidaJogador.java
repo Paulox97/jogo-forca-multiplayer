@@ -1,4 +1,4 @@
-package utfpr.edu.forcamultiplayer;
+package utfpr.edu.forcamultiplayer.client;
 
 
 public class VidaJogador {

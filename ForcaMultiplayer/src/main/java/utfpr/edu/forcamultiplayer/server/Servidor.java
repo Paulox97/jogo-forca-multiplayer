@@ -1,4 +1,4 @@
-package utfpr.edu.forcamultiplayer;
+package utfpr.edu.forcamultiplayer.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;

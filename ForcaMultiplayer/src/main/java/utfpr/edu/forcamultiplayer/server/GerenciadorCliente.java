@@ -1,5 +1,5 @@
 
-package utfpr.edu.forcamultiplayer;
+package utfpr.edu.forcamultiplayer.server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

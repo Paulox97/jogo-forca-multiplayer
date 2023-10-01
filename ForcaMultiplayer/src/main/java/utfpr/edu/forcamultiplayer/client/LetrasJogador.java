@@ -1,5 +1,5 @@
 
-package utfpr.edu.forcamultiplayer;
+package utfpr.edu.forcamultiplayer.client;
 
 import java.util.Scanner;
 
