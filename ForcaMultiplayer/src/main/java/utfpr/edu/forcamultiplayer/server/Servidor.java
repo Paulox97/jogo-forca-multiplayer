@@ -1,57 +1,84 @@
 package utfpr.edu.forcamultiplayer.server;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Set;
+import utfpr.edu.forcamultiplayer.common.Decoder;
+import utfpr.edu.forcamultiplayer.common.Operacao;
+import utfpr.edu.forcamultiplayer.common.SendData;
 
 
 public class Servidor {
-    private ServerSocket socket;
-    private int numClientes = 0;
-    private static final int MAX_CLIENTES = 4; //Definindo a quantidade máximo de clientes
-    
-    public Servidor (ServerSocket socket){
-        this.socket = socket;
-    }
-    
-    public void iniciarSessao() throws IOException{
-        while(!socket.isClosed()){
-            /*Nesse ponto o servidor aguarda uma coneção quando um cliente
-             se conecta o .accept retorna um socket*/
-            //O cliente usa o Ojeto conexao para se conectar
-            Socket conecao = socket.accept();
-            System.out.println("Um cliente se conectou!");
-            
-            if (numClientes < MAX_CLIENTES){
-                numClientes++;
-                GerenciadorCliente gc = new GerenciadorCliente(conecao);
-            /*Uma thread pode receber um objeto que contenha a interface RUNNABLE
-            a thread ficará responsavel por rodar essa instância de forma separada
-            e independente do resto do código*/
-            Thread t = new Thread(gc);
-            t.start();
-            } else {
-                System.out.println("Número máximo de clientes atingido. Conexão recusada");
-                conecao.close();
-            }  
-        }//fim while
-    }//fim iniciar sessão
-    
-    //Podemos chamar esse método sempre que um cliente for desconectado
-    public void clienteDesconectado(){
-        numClientes--;
-    }
-    
-    public void fecharSessao() throws IOException{
-        if(socket != null){
-            socket.close();
-        }
-    }
-    
+
     public static void main(String[] args) throws IOException{
-        ServerSocket socket = new ServerSocket(8080);//seta a porta
-        Servidor servidor = new Servidor(socket);//instancia um objeto
-        System.out.println("Servidor subiu!");
-        servidor.iniciarSessao();//chama o metodo iniciar sessao
+        serverChanel();
+    }
+
+    private static void serverChanel(){
+        try{
+            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+            serverSocketChannel.socket().bind(new InetSocketAddress(8080));
+            serverSocketChannel.configureBlocking(false);
+
+            // Crie um seletor para lidar com eventos de E/S assíncronos
+            Selector selector = Selector.open();
+            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+            System.out.println("Servidor ouvindo na porta 8080...");
+
+            while (true) {
+                // Aguarde eventos de E/S
+                selector.select();
+
+                // Obtém as chaves de seleção disponíveis
+                Set<SelectionKey> selectedKeys = selector.selectedKeys();
+                Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+
+                while (keyIterator.hasNext()) {
+                    SelectionKey key = keyIterator.next();
+
+                    if (key.isAcceptable()) {
+                        // Aceita uma nova conexão
+                        ServerSocketChannel serverChannel = (ServerSocketChannel) key.channel();
+                        SocketChannel clientChannel = serverChannel.accept();
+                        clientChannel.configureBlocking(false);
+                        clientChannel.register(selector, SelectionKey.OP_READ);
+                        System.out.println("Nova conexão aceita de " + clientChannel.getRemoteAddress());
+                    } else if (key.isReadable()) {
+                        // Lê dados do cliente
+                        SocketChannel clientChannel = (SocketChannel) key.channel();
+                        ByteBuffer buffer = ByteBuffer.allocate(1024);
+                        int bytesRead = clientChannel.read(buffer);
+
+                        if (bytesRead == -1) {
+                            // A conexão foi encerrada pelo cliente
+                            clientChannel.close();
+                            System.out.println("Conexão encerrada por " + clientChannel.getRemoteAddress());
+                        } else if (bytesRead > 0) {
+                            buffer.flip();
+                            byte[] data = new byte[bytesRead];
+                            buffer.get(data);
+                            String message = new String(data);
+                            var inputData = Decoder.decoder(message);
+                            var outPut = Operacao.operacao(inputData, clientChannel);
+                            SendData.sendData(clientChannel, outPut, selector);
+                        }
+                    }
+                    
+                    keyIterator.remove();
+                }
+            }
+        } catch (Exception ex){
+
+        }
+
     }
 }
